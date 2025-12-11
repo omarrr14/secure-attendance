@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import QrScanner from 'react-qr-scanner';
+import { Scanner, type IDetectedBarcode } from '@yudiel/react-qr-scanner';
 import api from '../lib/axios';
 import { Camera, CheckCircle, XCircle, RefreshCw, BarChart3, Calendar, ScanLine } from 'lucide-react';
 
@@ -33,10 +33,13 @@ export default function StudentDashboard() {
         }
     }, []);
 
-    const handleScan = async (data: any) => {
-        if (data && data.text) {
-            setScanning(false);
-            submitAttendance(data.text);
+    const handleScan = (detectedCodes: IDetectedBarcode[]) => {
+        if (detectedCodes && detectedCodes.length > 0) {
+            const code = detectedCodes[0];
+            if (code.rawValue) {
+                setScanning(false);
+                submitAttendance(code.rawValue);
+            }
         }
     };
 
@@ -135,14 +138,16 @@ export default function StudentDashboard() {
 
                         {scanning && (
                             <div className="relative overflow-hidden rounded-2xl bg-black shadow-2xl">
-                                <QrScanner
-                                    delay={300}
+                                <Scanner
+                                    scanDelay={300}
                                     onError={handleError}
                                     onScan={handleScan}
-                                    style={{ width: '100%', height: '400px', objectFit: 'cover' }}
+                                    styles={{
+                                        container: { height: '400px' },
+                                        video: { objectFit: 'cover' }
+                                    }}
                                     constraints={{
-                                        audio: false,
-                                        video: { facingMode: facingMode }
+                                        facingMode: facingMode
                                     }}
                                 />
                                 
